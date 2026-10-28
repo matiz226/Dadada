@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Мы Рядом ❤️" />
+  <meta name="theme-color" content="#0D0D12" />
+  <title>Мы Рядом ❤️ — Виджет и приложение для пар</title>
+  <style>
+    :root {
+      --bg: #0D0D12;
+      --card: #171721;
+      --card-2: #1F1F2C;
+      --pink: #FF4D88;
+      --teal: #00D2D3;
+      --amber: #FECA57;
+      --text: #FFFFFF;
+      --muted: #9A9AA8;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body {
+      margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      overflow-x: hidden;
+      padding-bottom: 92px;
+      padding-top: env(safe-area-inset-top, 12px);
+    }
+    .container { max-width: 480px; margin: 0 auto; padding: 14px 16px; }
+    .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700;
+      background: rgba(255, 77, 136, 0.16); border: 1px solid rgba(255, 77, 136, 0.4);
+    }
+    .streak-pill {
+      background: rgba(254, 202, 87, 0.16); color: var(--amber);
+      padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 700;
+    }
+    .segmented {
+      display: flex; background: var(--card); border-radius: 14px; padding: 4px; margin-bottom: 16px;
+    }
+    .segmented button {
+      flex: 1; border: none; background: transparent; color: var(--muted);
+      padding: 9px 10px; border-radius: 11px; font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .segmented button.active { background: var(--pink); color: #fff; }
+    .card {
+      background: var(--card); border-radius: 24px; padding: 16px;
+      border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;
+    }
+    /* Виджеты Главного экрана */
+    .medium-widget {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      background: linear-gradient(145deg, #191925, #12121A);
+      border-radius: 28px; padding: 12px; border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.45); margin-bottom: 14px;
+    }
+    .widget-doodle-box {
+      position: relative; aspect-ratio: 1/1; background: #1F1F2B;
+      border-radius: 20px; overflow: hidden; cursor: pointer;
+    }
+    .widget-doodle-box img, .widget-doodle-box canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .widget-badge {
+      position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.65);
+      padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; backdrop-filter: blur(8px);
+    }
+    .widget-heart-btn {
+      position: absolute; bottom: 8px; right: 8px; width: 32px; height: 32px;
+      border-radius: 50%; border: none; background: rgba(0,0,0,0.75);
+      font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .widget-right-col { display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
+    .mini-slot {
+      background: rgba(255,255,255,0.06); border-radius: 14px; padding: 8px 10px;
+      font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+    }
+    .small-widgets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .small-widget {
+      background: var(--card); border-radius: 26px; padding: 14px; min-height: 142px;
+      border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: space-between;
+    }
+    /* Экран блокировки (Lock Screen) */
+    .lockscreen-preview {
+      background: linear-gradient(180deg, #22162F 0%, #0F1018 100%);
+      border-radius: 32px; padding: 22px 16px; text-align: center;
+      border: 1px solid rgba(255,255,255,0.2); margin-bottom: 18px;
+    }
+    .lock-time { font-size: 62px; font-weight: 800; line-height: 1.05; letter-spacing: -1.5px; margin: 4px 0 18px; }
+    .lock-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+    .lock-circle {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: 2.5px solid rgba(255,255,255,0.35);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+    }
+    .lock-rect {
+      flex: 1; height: 64px; border-radius: 18px; background: rgba(255,255,255,0.1);
+      padding: 8px 10px; display: flex; align-items: center; gap: 8px; text-align: left;
+    }
+    /* Чипы и кнопки */
+    .chips-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 16px; }
+    .chips-scroll::-webkit-scrollbar { display: none; }
+    .chip {
+      white-space: nowrap; padding: 8px 14px; border-radius: 99px;
+      background: var(--card); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .chip.active { background: var(--pink); border-color: var(--pink); }
+    .btn-primary {
+      width: 100%; border: none; background: var(--pink); color: #fff;
+      padding: 15px; border-radius: 16px; font-size: 15px; font-weight: 700; cursor: pointer;
+    }
+    .btn-outline {
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05);
+      color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    input, textarea, select {
+      width: 100%; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; padding: 12px 14px; border-radius: 14px; font-size: 15px; margin-bottom: 10px; outline: none;
+    }
+    /* Холст Дудлов */
+    .canvas-wrapper {
+      width: 100%; aspect-ratio: 1/1; border-radius: 28px; overflow: hidden;
+      background: #181822; border: 2px solid rgba(255,77,136,0.35); position: relative;
+      touch-action: none; margin-bottom: 12px;
+    }
+    .canvas-wrapper canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; }
+    .palette-row { display: flex; justify-content: space-around; align-items: center; margin-bottom: 12px; }
+    .color-dot {
+      width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+      border: 3px solid transparent; transition: transform 0.15s;
+    }
+    .color-dot.active { transform: scale(1.2); border-color: #fff; }
+    /* Навигация снизу */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(20, 20, 29, 0.94); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex; justify-content: space-around;
+      padding: 8px 6px calc(env(safe-area-inset-bottom, 8px) + 6px); z-index: 100;
+    }
+    .nav-item {
+      border: none; background: transparent; color: var(--muted);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 10px; border-radius: 12px;
+    }
+    .nav-item.active { color: var(--pink); }
+    .nav-icon { font-size: 20px; }
+    .tab-page { display: none; }
+    .tab-page.active { display: block; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .blur-lock {
+      filter: blur(5px); opacity: 0.5; pointer-events: none; select: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- ШАПКА ПАРЫ -->
+  <div class="header-bar">
+    <div class="pill" onclick="openPairModal()">
+      <span>❤️</span>
+      <span id="coupleNamesLabel">Матвей & Полина</span>
+      <span style="font-size:11px; opacity:0.7;">⚙️</span>
+    </div>
+    <div class="streak-pill" id="streakBadge">🔥 24 дн.</div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 0: ВИДЖЕТЫ (ГЛАВНЫЙ ЭКРАН + БЛОКИРОВКА), РАДАР И ОТСЧЁТЫ      -->
+  <!-- ==================================================================== -->
+  <div id="tab-0" class="tab-page active">
+    <div class="segmented">
+      <button id="btnModeHome" class="active" onclick="setWidgetPreviewMode('home')">📱 Главный экран</button>
+      <button id="btnModeLock" onclick="setWidgetPreviewMode('lock')">🔒 Экран блокировки</button>
+    </div>
+
+    <!-- ПРЕВЬЮ ГЛАВНОГО ЭКРАНА -->
+    <div id="homeWidgetsBox">
+      <div class="medium-widget">
+        <div class="widget-doodle-box" onclick="switchTab(1)">
+          <img id="widgetDoodleImg" alt="Дудл" />
+          <div class="widget-badge" id="widgetDoodleTime">🎨 18:45</div>
+          <button class="widget-heart-btn" onclick="event.stopPropagation(); toggleWidgetReaction()" id="widgetReactionBtn">❤️</button>
+        </div>
+        <div class="widget-right-col">
+          <div class="mini-slot" onclick="scrollToCountdowns()">
+            <span id="wCountdownEmoji">✈️</span>
+            <span style="color:var(--pink); font-weight:800;" id="wCountdownDays">14 дн.</span>
+            <span style="color:var(--muted); font-size:11px;" id="wCountdownTitle">Встреча</span>
+          </div>
+          <div class="mini-slot">
+            <span id="wPartnerEmoji">🥰</span>
+            <span style="color:#4cd137; font-weight:800;" id="wPartnerBattery">🔋84%</span>
+            <span style="color:var(--muted); font-size:11px;" id="wDistance">📍640 км</span>
+          </div>
+          <div class="mini-slot" style="background:rgba(255,77,136,0.22);" onclick="switchTab(2)">
+            <span id="wChallengeLockIcon">🔒</span>
+            <span id="wChallengeStatusText" style="font-size:11px; font-weight:700;">Вопрос дня ждёт</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="small-widgets-grid">
+        <div class="small-widget">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:26px;" id="smMoodEmoji">🥰</span>
+            <span style="background:rgba(76,209,55,0.16); color:#4cd137; padding:4px 8px; border-radius:10px; font-size:12px; font-weight:700;" id="smBatteryTag">⚡ 84%</span>
+          </div>
+          <div>
+            <div style="font-weight:700; font-size:15px;" id="smPartnerName">Полина</div>
+            <div style="color:var(--muted); font-size:11px;" id="smMoodText">Жду вечернего созвона</div>
+          </div>
+          <div style="color:var(--pink); font-size:11px; font-weight:700;" id="smDistanceText">📍 Между вами 640 км</div>
+        </div>
+
+        <div class="small-widget" style="background:linear-gradient(135deg,#2B1628,#161622); border-color:rgba(255,77,136,0.35);" onclick="scrollToCountdowns()">
+          <span style="font-size:24px;" id="smCdEmoji">✈️</span>
+          <div style="font-size:26px; font-weight:900;" id="smCdDays">14 дней</div>
+          <div style="color:rgba(255,255,255,0.75); font-size:12px;" id="smCdTitle">Встреча в аэропорту</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ПРЕВЬЮ ЭКРАНА БЛОКИРОВКИ -->
+    <div id="lockWidgetsBox" style="display:none;">
+      <div class="lockscreen-preview">
+        <div style="font-size:12px; color:rgba(255,255,255,0.75); font-weight:600;" id="lockInlineText">
+          ❤️ 14 дн. • 🥰 84% • 📍 640 км
+        </div>
+        <div class="lock-time" id="lockClockText">09:41</div>
+        <div class="lock-row">
+          <div class="lock-circle">
+            <span style="font-size:18px;" id="lockCircEmoji">🥰</span>
+            <span id="lockCircBat">84%</span>
+          </div>
+          <div class="lock-circle" style="border-color:var(--pink);">
+            <span style="color:var(--pink); font-size:11px;">❤️</span>
+            <span style="font-size:17px; font-weight:900;" id="lockCircDays">14</span>
+            <span style="font-size:9px; opacity:0.75;">дн.</span>
+          </div>
+          <div class="lock-rect" onclick="switchTab(1)">
+            <img id="lockDoodleImg" style="width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.08);" />
+            <div style="overflow:hidden;">
+              <div style="font-size:12px; font-weight:700;" id="lockRectName">🥰 Полина</div>
+              <div style="font-size:10px; opacity:0.75;" id="lockRectMeta">🔋84% • 📍640 км</div>
+              <div style="font-size:10px; color:var(--pink); font-weight:700;" id="lockRectCd">До встречи: 14 дн.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ОТМЕТКА СВОЕГО НАСТРОЕНИЯ И ЖИВОЙ БАТАРЕИ ТЕЛЕФОНА -->
+    <div style="font-weight:700; font-size:14px; margin-bottom:8px;">
+      Ваше настроение и заряд (<span id="myRealBatteryLabel">🔋 100%</span>):
+    </div>
+    <div class="chips-scroll" id="moodChipsBox"></div>
+
+    <!-- ОБРАТНЫЕ ОТСЧЁТЫ -->
+    <div id="countdownsSection" style="display:flex; justify-content:space-between; align-items:center; margin:18px 0 10px;">
+      <span style="font-weight:700; font-size:16px;">Обратные отсчёты ⏳</span>
+      <button class="btn-outline" onclick="addNewCountdownPrompt()">+ Добавить</button>
+    </div>
+    <div id="countdownsList"></div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 1: СТУДИЯ ДУДЛОВ (ПОВЕРХ РИСУНКА ПАРТНЁРА, ЛАСТИК, ТАЙМЕР)   -->
+  <!-- ==================================================================== -->
+  <div id="tab-1" class="tab-page">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span style="font-size:18px; font-weight:800;">Визуальный диалог 🎨</span>
+      <div style="display:flex; gap:6px;">
+        <button class="btn-outline" onclick="undoStroke()">↩️ Шаг назад</button>
+        <button class="btn-outline" onclick="clearMyLayer()">🗑️ Очистить мой слой</button>
+      </div>
+    </div>
+
+    <!-- Реакции на дудл партнёра -->
+    <div class="chips-scroll" id="doodleReactionsBar"></div>
+
+    <!-- Двухслойный холст (Слой 0: партнёр, Слой 1: ваши штрихи с изолированным ластиком) -->
+    <div class="canvas-wrapper" id="canvasContainer">
+      <canvas id="partnerCanvas" width="400" height="400"></canvas>
+      <canvas id="myCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <div class="card" style="padding:12px;">
+      <div class="palette-row" id="colorPaletteRow"></div>
+      <div class="segmented" style="margin-bottom:0;">
+        <button id="tool-PEN" class="active" onclick="selectTool('PEN')">✒️ Ручка</button>
+        <button id="tool-MARKER" onclick="selectTool('MARKER')">🖍️ Маркер</button>
+        <button id="tool-CHALK" onclick="selectTool('CHALK')">✨ Мелок</button>
+        <button id="tool-ERASER" onclick="selectTool('ERASER')">🧽 Ластик</button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:10px;">
+      <select id="scheduleSelect" style="margin-bottom:0; flex:1;">
+        <option value="">⚡ Доставить мгновенно</option>
+        <option value="К 08:00 по времени партнёра">🌅 К 08:00 утра по времени партнёра</option>
+        <option value="Вечером в 21:00">🌙 Вечером в 21:00 (сюрприз)</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="sendDoodleToWidget()">Отправить Дудл на виджет ❤️</button>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 2: ЕЖЕДНЕВНЫЙ ЧЕЛЛЕНДЖ («СЛЕПОЙ ОТВЕТ») + ИСТОРИЯ            -->
+  <!-- ==================================================================== -->
+  <div id="tab-2" class="tab-page">
+    <div class="grid-2" style="margin-bottom:14px;">
+      <div class="card" style="margin-bottom:0; padding:12px;">
+        <div style="font-size:11px; color:var(--muted);">🔥 Серия без пропусков</div>
+        <div style="font-size:18px; font-weight:800; margin-top:4px;" id="chStreakStat">24 дня подряд</div>
+      </div>
+      <div class="card" style="margin-bottom:0; padding:12px;">
+        <div style="font-size:11px; color:var(--muted);">🎯 Синхронность пары</div>
+        <div style="font-size:18px; font-weight:800; margin-top:4px; color:var(--teal);">92% совпадений</div>
+      </div>
+    </div>
+
+    <div class="card" style="background:linear-gradient(145deg,#24172B,#151520); border-color:rgba(255,77,136,0.4);">
+      <div id="chLockHeader" style="font-size:12px; font-weight:700; color:var(--amber); margin-bottom:8px;">
+        🔒 Ответ партнёра скрыт, пока вы не ответите!
+      </div>
+      <div style="font-size:20px; font-weight:800; margin-bottom:16px;" id="chPromptText"></div>
+      <div id="chInteractiveArea"></div>
+    </div>
+
+    <div style="font-weight:700; font-size:16px; margin:18px 0 10px;">История ваших ответов 📚</div>
+    <div id="chHistoryList"></div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 3: ОБЩИЙ СПИСОК ЖЕЛАНИЙ (ПАКЕТНЫЙ ПЕРЕНОС) + ИСТОРИЯ ЛЮБВИ   -->
+  <!-- ==================================================================== -->
+  <div id="tab-3" class="tab-page">
+    <div class="segmented">
+      <button id="btnWishSub0" class="active" onclick="setWishSubTab(0)">✨ Доски желаний</button>
+      <button id="btnWishSub1" onclick="setWishSubTab(1)">❤️ Лента истории любви</button>
+    </div>
+
+    <div id="wishlistSubBox">
+      <div class="chips-scroll" id="boardsBar"></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <button class="btn-outline" onclick="addWishPrompt()">+ Новое желание</button>
+        <button class="btn-outline" id="multiSelectBtn" onclick="toggleWishMultiSelect()">☑️ Выбрать несколько</button>
+      </div>
+      <div id="batchMoveBar" style="display:none; margin-bottom:12px;" class="card">
+        <div style="font-size:13px; font-weight:700; margin-bottom:8px;">Перенести выбранные карточки на доску:</div>
+        <div class="chips-scroll" id="batchTargetBoards" style="margin-bottom:0;"></div>
+      </div>
+      <div id="wishlistCardsContainer"></div>
+    </div>
+
+    <div id="loveStorySubBox" style="display:none;">
+      <div class="card" style="background:linear-gradient(135deg,rgba(255,77,136,0.3),rgba(138,92,245,0.15));">
+        <div style="font-size:12px; color:rgba(255,255,255,0.75);">Ваша история любви длится уже</div>
+        <div style="font-size:28px; font-weight:900; margin:4px 0;">622 дня ❤️</div>
+        <div style="font-size:12px; color:var(--teal);">Каждая выполненная мечта автоматически попадает в вашу ленту</div>
+      </div>
+      <div id="loveStoryTimelineList"></div>
+    </div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- ВКЛАДКА 4: МЕЛОЧИ О ПАРТНЁРЕ (КОЛЬЦО, ЦВЕТЫ) + ПРИВАТНЫЕ ЗАМЕТКИ     -->
+  <!-- ==================================================================== -->
+  <div id="tab-4" class="tab-page">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <span style="font-size:18px; font-weight:800;">Помнить мелочи ✨</span>
+      <span style="font-size:11px; color:var(--muted);">Тап по статусу меняет приватность</span>
+    </div>
+    <div class="grid-2" id="factChipsGrid" style="margin-bottom:20px;"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <span style="font-size:16px; font-weight:800;">Личные и общие заметки 📝</span>
+      <button class="btn-outline" onclick="addNotePrompt()">+ Заметка</button>
+    </div>
+    <div id="regularNotesList"></div>
+  </div>
+</div>
+
+<!-- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="switchTab(0)" id="nav-0">
+    <span class="nav-icon">📱</span><span>Виджеты</span>
+  </button>
+  <button class="nav-item" onclick="switchTab(1)" id="nav-1">
+    <span class="nav-icon">🎨</span><span>Дудлы</span>
+  </button>
+  <button class="nav-item" onclick="switchTab(2)" id="nav-2">
+    <span class="nav-icon">🔐</span><span>Челлендж</span>
+  </button>
+  <button class="nav-item" onclick="switchTab(3)" id="nav-3">
+    <span class="nav-icon">✨</span><span>Мечты</span>
+  </button>
+  <button class="nav-item" onclick="switchTab(4)" id="nav-4">
+    <span class="nav-icon">📝</span><span>Заметки</span>
+  </button>
+</nav>
+
+<script>
+  // ==========================================================================
+  // ЕДИНОЕ ХРАНИЛИЩЕ ДАННЫХ С АВТОСОХРАНЕНИЕМ В ПАМЯТЬ ТЕЛЕФОНА (localStorage)
+  // ==========================================================================
+  const STORAGE_KEY = 'couple_super_app_state_v1';
+
+  const defaultState = {
+    myName: 'Матвей',
+    partnerName: 'Полина',
+    inviteCode: '7K9M4X',
+    streakDays: 24,
+    myMoodEmoji: '🔥',
+    myMoodText: 'На связи',
+    partnerMoodEmoji: '🥰',
+    partnerMoodText: 'Жду вечернего созвона',
+    partnerBattery: 84,
+    distanceKm: 640,
+    doodleTime: '18:45',
+    doodleReaction: '❤️',
+    doodleDataUrl: null,
+    countdowns: [
+      { id: 'c1', emoji: '✈️', title: 'Встреча в аэропорту', days: 14, pinned: true },
+      { id: 'c2', emoji: '🏔️', title: 'Зимняя поездка вдвоём', days: 64, pinned: false },
+      { id: 'c3', emoji: '💍', title: 'Годовщина отношений', days: 109, pinned: false }
+    ],
+    todayChallenge: {
+      prompt: 'Идеальный вечер после долгой разлуки — это...',
+      options: [
+        'Домашний уют, пицца и сериал в обнимку 🍕',
+        'Ночная прогулка по городу и горячий чай 🌃'
+      ],
+      myAnswer: null,
+      partnerAnswer: 'Ночная прогулка по городу и горячий чай 🌃'
+    },
+    historyChallenges: [
+      { date: 'Вчера', prompt: 'Насколько сильно ты скучаешь по шкале 1–10?', my: '10 из 10 ❤️', partner: '10 из 10 ❤️' },
+      { date: '2 дня назад', prompt: 'Какая мелочь напоминает тебе обо мне?', my: 'Аромат хорошего чая пуэр', partner: 'Твои утренние кружочки и голосовые' }
+    ],
+    boards: [
+      { id: 'b_trips', emoji: '✈️', title: 'Поездки' },
+      { id: 'b_food', emoji: '🍜', title: 'Еда и чай' },
+      { id: 'b_movies', emoji: '🎬', title: 'Фильмы' },
+      { id: 'b_dates', emoji: '🕯️', title: 'Свидания' }
+    ],
+    activeBoardId: 'b_trips',
+    wishes: [
+      { id: 'w1', boardId: 'b_trips', title: 'Увидеть северное сияние в Териберке', sub: 'Домик с панорамной крышей', done: false },
+      { id: 'w2', boardId: 'b_trips', title: 'Выходные в Казани с чайной дегустацией', sub: 'Найти уютную чайную с блинами пуэра', done: false },
+      { id: 'w3', boardId: 'b_food', title: 'Приготовить том-ям синхронно по видеосвязи', sub: 'Включить один плейлист', done: false },
+      { id: 'w4', boardId: 'b_movies', title: 'Посмотреть «Перед рассветом» одновременно', sub: 'Старт ровно в 22:00', done: false }
+    ],
+    loveStory: [
+      { date: '14 февраля 2025', loc: 'Казань', title: 'День начала нашей истории ❤️', text: 'Тот самый вечер, когда мы проговорили до утра.' },
+      { date: '22 августа 2025', loc: 'Самара', title: 'Летний закат на набережной Волги', text: 'Тёплый ветер, прогулка у реки и сотня общих фото.' }
+    ],
+    notes: [
+      { id: 'n1', chip: true, mine: true, emoji: '💍', title: 'Размер кольца', content: '16.5 (безымянный)', shared: false },
+      { id: 'n2', chip: true, mine: true, emoji: '🌸', title: 'Любимые цветы', content: 'Белые пионы', shared: false },
+      { id: 'n3', chip: true, mine: false, emoji: '🍵', title: 'Любимый чай', content: 'Шу Пуэр и габа улун', shared: true },
+      { id: 'n4', chip: true, mine: false, emoji: '👟', title: 'Размеры', content: 'Худи M, Обувь 37 EU', shared: true },
+      { id: 'n5', chip: false, mine: true, emoji: '🎁', title: 'Сюрприз на годовщину', content: 'Винтажный плёночный фотоаппарат и парная гравировка с датой первой встречи.', shared: false },
+      { id: 'n6', chip: false, mine: false, emoji: '🧳', title: 'Что взять в поездку', content: 'Пауэрбанк, карточную игру в поезд, термос и тёплые худи.', shared: true }
+    ]
+  };
+
+  let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaultState;
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderAll();
+  }
+
+  // Реальное чтение заряда батареи телефона (Web Battery API)
+  if ('getBattery' in navigator) {
+    navigator.getBattery().then(bat => {
+      const updateBat = () => {
+        const lvl = Math.round(bat.level * 100);
+        document.getElementById('myRealBatteryLabel').textContent = `🔋 ${lvl}%${bat.charging ? ' ⚡' : ''}`;
+      };
+      updateBat();
+      bat.addEventListener('levelchange', updateBat);
+    });
+  }
+
+  // ==========================================================================
+  // НАВИГАЦИЯ И РЕНДЕРИНГ ИНТЕРФЕЙСА
+  // ==========================================================================
+  function switchTab(idx) {
+    document.querySelectorAll('.tab-page').forEach((el, i) => el.classList.toggle('active', i === idx));
+    document.querySelectorAll('.nav-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setWidgetPreviewMode(mode) {
+    document.getElementById('btnModeHome').classList.toggle('active', mode === 'home');
+    document.getElementById('btnModeLock').classList.toggle('active', mode === 'lock');
+    document.getElementById('homeWidgetsBox').style.display = mode === 'home' ? 'block' : 'none';
+    document.getElementById('lockWidgetsBox').style.display = mode === 'lock' ? 'block' : 'none';
+  }
+
+  function scrollToCountdowns() {
+    switchTab(0);
+    document.getElementById('countdownsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  const moodPresets = [
+    ['🔥', 'В работе'], ['🥰', 'Скучаю по тебе'], ['🍵', 'Пью пуэр'],
+    ['😴', 'Хочу спать'], ['🎧', 'В наушниках'], ['🥺', 'Хочу обнимашек']
+  ];
+
+  function renderAll() {
+    document.getElementById('coupleNamesLabel').textContent = `${state.myName} & ${state.partnerName}`;
+    document.getElementById('streakBadge').textContent = `🔥 ${state.streakDays} дн.`;
+
+    const cd = state.countdowns.find(c => c.pinned) || state.countdowns[0];
+    document.getElementById('wCountdownEmoji').textContent = cd.emoji;
+    document.getElementById('wCountdownDays').textContent = `${cd.days} дн.`;
+    document.getElementById('wCountdownTitle').textContent = cd.title;
+
+    document.getElementById('wPartnerEmoji').textContent = state.partnerMoodEmoji;
+    document.getElementById('wPartnerBattery').textContent = `🔋${state.partnerBattery}%`;
+    document.getElementById('wDistance').textContent = `📍${state.distanceKm} км`;
+
+    const revealed = Boolean(state.todayChallenge.myAnswer);
+    document.getElementById('wChallengeLockIcon').textContent = revealed ? '🔓' : '🔒';
+    document.getElementById('wChallengeStatusText').textContent = revealed ? 'Ответы открыты!' : 'Вопрос дня ждёт';
+
+    document.getElementById('widgetDoodleTime').textContent = `🎨 ${state.doodleTime}`;
+    document.getElementById('widgetReactionBtn').textContent = state.doodleReaction || '🤍';
+
+    // Small widgets & Lock Screen
+    document.getElementById('smMoodEmoji').textContent = state.partnerMoodEmoji;
+    document.getElementById('smBatteryTag').textContent = `⚡ ${state.partnerBattery}%`;
+    document.getElementById('smPartnerName').textContent = state.partnerName;
+    document.getElementById('smMoodText').textContent = state.partnerMoodText;
+    document.getElementById('smDistanceText').textContent = `📍 Между вами ${state.distanceKm} км`;
+    document.getElementById('smCdEmoji').textContent = cd.emoji;
+    document.getElementById('smCdDays').textContent = `${cd.days} дней`;
+    document.getElementById('smCdTitle').textContent = cd.title;
+
+    document.getElementById('lockInlineText').textContent = `❤️ ${cd.days} дн. • ${state.partnerMoodEmoji} ${state.partnerBattery}% • 📍 ${state.distanceKm} км`;
+    document.getElementById('lockCircEmoji').textContent = state.partnerMoodEmoji;
+    document.getElementById('lockCircBat').textContent = `${state.partnerBattery}%`;
+    document.getElementById('lockCircDays').textContent = cd.days;
+    document.getElementById('lockRectName').textContent = `${state.partnerMoodEmoji} ${state.partnerName}`;
+    document.getElementById('lockRectMeta').textContent = `🔋${state.partnerBattery}% • 📍${state.distanceKm} км`;
+    document.getElementById('lockRectCd').textContent = `До встречи: ${cd.days} дн.`;
+
+    // Настроение
+    const moodBox = document.getElementById('moodChipsBox');
+    moodBox.innerHTML = moodPresets.map(([em, txt]) => {
+      const act = state.myMoodEmoji === em ? 'active' : '';
+      return `<button class="chip ${act}" onclick="setMyMood('${em}','${txt}')">${em} ${txt}</button>`;
+    }).join('');
+
+    // Список отсчётов
+    document.getElementById('countdownsList').innerHTML = state.countdowns.map(item => `
+      <div class="card" style="display:flex; align-items:center; justify-content:space-between; border-color:${item.pinned ? 'var(--pink)' : 'rgba(255,255,255,0.08)'};" onclick="pinCountdown('${item.id}')">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:26px;">${item.emoji}</span>
+          <div>
+            <div style="font-weight:700; font-size:15px;">${item.title}</div>
+            <div style="font-size:11px; color:${item.pinned ? 'var(--pink)' : 'var(--muted)'};">
+              ${item.pinned ? '📌 Закреплён на виджете' : 'Нажмите, чтобы вывести на виджет'}
+            </div>
+          </div>
+        </div>
+        <div style="font-size:20px; font-weight:900; color:var(--pink);">${item.days} дн.</div>
+      </div>
+    `).join('');
+
+    renderChallengeTab();
+    renderWishlistAndStoryTab();
+    renderNotesTab();
+  }
+
+  function setMyMood(em, txt) {
+    state.myMoodEmoji = em;
+    state.myMoodText = txt;
+    saveState();
+  }
+
+  function toggleWidgetReaction() {
+    state.doodleReaction = state.doodleReaction === '❤️' ? '🔥' : '❤️';
+    saveState();
+  }
+
+  function pinCountdown(id) {
+    state.countdowns.forEach(c => c.pinned = (c.id === id));
+    saveState();
+  }
+
+  function addNewCountdownPrompt() {
+    const title = prompt('Название события (например: Поездка в Питер):');
+    if (!title) return;
+    const days = parseInt(prompt('Через сколько дней событие?', '21'), 10) || 14;
+    state.countdowns.forEach(c => c.pinned = false);
+    state.countdowns.unshift({ id: 'c' + Date.now(), emoji: '❤️', title, days, pinned: true });
+    saveState();
+  }
+
+  function openPairModal() {
+    const pName = prompt(`Ваш код пары: ${state.inviteCode}\nВведите имя партнёра:`, state.partnerName);
+    if (pName) {
+      state.partnerName = pName.trim();
+      saveState();
+    }
+  }
+
+  // ==========================================================================
+  // МОДУЛЬ РИСОВАНИЯ ДУДЛОВ (ДВА СЛОЯ + КРИВЫЕ БЕЗЬЕ + ИЗОЛИРОВАННЫЙ ЛАСТИК)
+  // ==========================================================================
+  const partnerCanvas = document.getElementById('partnerCanvas');
+  const partnerCtx = partnerCanvas.getContext('2d');
+  const myCanvas = document.getElementById('myCanvas');
+  const myCtx = myCanvas.getContext('2d');
+
+  const paletteColors = ['#FF4D88', '#FF9F43', '#FECA57', '#00D2D3', '#8A5CF5', '#FFFFFF'];
+  let currentTool = 'PEN';
+  let currentColor = '#FF4D88';
+  let myStrokes = [];
+  let activePoints = [];
+  let isDrawing = false;
+
+  function initDoodleStudio() {
+    // Палитра
+    document.getElementById('colorPaletteRow').innerHTML = paletteColors.map(c => `
+      <div class="color-dot ${c === currentColor ? 'active' : ''}" style="background:${c};" onclick="selectColor('${c}', this)"></div>
+    `).join('');
+
+    // Реакции
+    const emojis = ['❤️', '😂', '🥰', '🔥', '💋', '✨'];
+    document.getElementById('doodleReactionsBar').innerHTML = emojis.map(em => `
+      <button class="chip ${state.doodleReaction === em ? 'active' : ''}" onclick="state.doodleReaction='${em}'; saveState(); initDoodleStudio();">${em}</button>
+    `).join('');
+
+    drawPartnerBaseHeart();
+    redrawMyLayer();
+    exportCompositeToWidgets();
+  }
+
+  function drawPartnerBaseHeart() {
+    partnerCtx.fillStyle = '#181822';
+    partnerCtx.fillRect(0, 0, 400, 400);
+    partnerCtx.save();
+    partnerCtx.strokeStyle = 'rgba(255, 77, 136, 0.78)';
+    partnerCtx.lineWidth = 14;
+    partnerCtx.lineCap = 'round';
+    partnerCtx.lineJoin = 'round';
+    partnerCtx.beginPath();
+    partnerCtx.moveTo(200, 140);
+    partnerCtx.bezierCurveTo(130, 70, 60, 150, 200, 300);
+    partnerCtx.bezierCurveTo(340, 150, 270, 70, 200, 140);
+    partnerCtx.stroke();
+    partnerCtx.restore();
+  }
+
+  function selectColor(color, el) {
+    currentColor = color;
+    if (currentTool === 'ERASER') selectTool('PEN');
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function selectTool(tool) {
+    currentTool = tool;
+    ['PEN', 'MARKER', 'CHALK', 'ERASER'].forEach(t => {
+      document.getElementById('tool-' + t).classList.toggle('active', t === tool);
+    });
+  }
+
+  function getCanvasPos(e) {
+    const rect = myCanvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: (clientX - rect.left) * (400 / rect.width),
+      y: (clientY - rect.top) * (400 / rect.height)
+    };
+  }
+
+  myCanvas.addEventListener('pointerdown', e => {
+    isDrawing = true;
+    activePoints = [getCanvasPos(e)];
+    redrawMyLayer();
+  });
+
+  myCanvas.addEventListener('pointermove', e => {
+    if (!isDrawing) return;
+    const pt = getCanvasPos(e);
+    const last = activePoints[activePoints.length - 1];
+    if (Math.hypot(pt.x - last.x, pt.y - last.y) > 2.5) {
+      activePoints.push(pt);
+      redrawMyLayer();
+    }
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (!isDrawing) return;
+    isDrawing = false;
+    if (activePoints.length > 0) {
+      myStrokes.push({ tool: currentTool, color: currentColor, points: [...activePoints] });
+      activePoints = [];
+      redrawMyLayer();
+    }
+  });
+
+  function drawSmoothStrokeOnContext(ctx, stroke) {
+    const pts = stroke.points;
+    if (!pts.length) return;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (stroke.tool === 'ERASER') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = 26;
+    } else if (stroke.tool === 'MARKER') {
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.strokeStyle = stroke.color;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 18;
+    } else if (stroke.tool === 'CHALK') {
+      ctx.strokeStyle = stroke.color;
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 11;
+      ctx.setLineDash([3, 4]);
+    } else {
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = 9;
+    }
+
+    ctx.beginPath();
+    if (pts.length === 1) {
+      ctx.moveTo(pts[0].x, pts[0].y);
+      ctx.lineTo(pts[0].x + 0.5, pts[0].y + 0.5);
+    } else {
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) {
+        const midX = (pts[i - 1].x + pts[i].x) / 2;
+        const midY = (pts[i - 1].y + pts[i].y) / 2;
+        ctx.quadraticCurveTo(pts[i - 1].x, pts[i - 1].y, midX, midY);
+      }
+      ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function redrawMyLayer() {
+    myCtx.clearRect(0, 0, 400, 400);
+    myStrokes.forEach(s => drawSmoothStrokeOnContext(myCtx, s));
+    if (activePoints.length) {
+      drawSmoothStrokeOnContext(myCtx, { tool: currentTool, color: currentColor, points: activePoints });
+    }
+  }
+
+  function undoStroke() {
+    myStrokes.pop();
+    redrawMyLayer();
+  }
+
+  function clearMyLayer() {
+    myStrokes = [];
+    redrawMyLayer();
+  }
+
+  function exportCompositeToWidgets() {
+    const off = document.createElement('canvas');
+    off.width = 400; off.height = 400;
+    const octx = off.getContext('2d');
+    octx.drawImage(partnerCanvas, 0, 0);
+    octx.drawImage(myCanvas, 0, 0);
+    const url = off.toDataURL('image/webp', 0.85);
+    document.getElementById('widgetDoodleImg').src = url;
+    document.getElementById('lockDoodleImg').src = url;
+    return url;
+  }
+
+  function sendDoodleToWidget() {
+    const now = new Date();
+    state.doodleTime = now.toTimeString().slice(0, 5);
+    state.doodleDataUrl = exportCompositeToWidgets();
+    saveState();
+    const sched = document.getElementById('scheduleSelect').value;
+    alert(sched ? `Дудл запланирован (${sched})! ⏰` : 'Дудл мгновенно доставлен на виджет! 🎨');
+    switchTab(0);
+  }
+
+  // ==========================================================================
+  // ВКЛАДКА 2: ЕЖЕДНЕВНЫЙ ЧЕЛЛЕНДЖ («СЛЕПОЙ ОТВЕТ»)
+  // ==========================================================================
+  function renderChallengeTab() {
+    const ch = state.todayChallenge;
+    document.getElementById('chStreakStat').textContent = `${state.streakDays} дня подряд`;
+    document.getElementById('chPromptText').textContent = ch.prompt;
+
+    const area = document.getElementById('chInteractiveArea');
+    if (!ch.myAnswer) {
+      document.getElementById('chLockHeader').textContent = `🔒 ${state.partnerName} уже ответила! Ответьте, чтобы снять замок`;
+      document.getElementById('chLockHeader').style.color = 'var(--amber)';
+      area.innerHTML = ch.options.map(opt => `
+        <button class="btn-outline" style="width:100%; text-align:left; padding:14px; margin-bottom:8px;" onclick="submitDailyAnswer('${opt}')">
+          ${opt}
+        </button>
+      `).join('') + `
+        <div class="card" style="background:rgba(255,255,255,0.04); margin-top:8px; text-align:center;">
+          <div style="font-size:12px; color:var(--amber); font-weight:700;">🔒 Ответ партнёра заблокирован</div>
+          <div class="blur-lock" style="margin-top:4px;">Секретный ответ вашей второй половинки</div>
+        </div>
+      `;
+    } else {
+      document.getElementById('chLockHeader').textContent = '🔓 Оба ответили — ответы открыты!';
+      document.getElementById('chLockHeader').style.color = 'var(--teal)';
+      const match = ch.myAnswer === ch.partnerAnswer;
+      area.innerHTML = `
+        <div class="card" style="background:rgba(255,77,136,0.16); border-color:rgba(255,77,136,0.4); margin-bottom:8px;">
+          <div style="font-size:11px; color:var(--pink); font-weight:700;">Вы (${state.myName})</div>
+          <div style="font-weight:700; margin-top:4px;">${ch.myAnswer}</div>
+        </div>
+        <div class="card" style="background:rgba(0,210,211,0.14); border-color:rgba(0,210,211,0.4); margin-bottom:8px;">
+          <div style="font-size:11px; color:var(--teal); font-weight:700;">${state.partnerName} ❤️</div>
+          <div style="font-weight:700; margin-top:4px;">${ch.partnerAnswer}</div>
+        </div>
+        ${match ? `<div style="text-align:center; color:var(--pink); font-weight:800; font-size:13px; margin-top:8px;">🎯 100% совпадение мыслей!</div>` : ''}
+      `;
+    }
+
+    document.getElementById('chHistoryList').innerHTML = state.historyChallenges.map(h => `
+      <div class="card">
+        <div style="font-size:11px; color:var(--pink); font-weight:700;">${h.date}</div>
+        <div style="font-weight:700; margin:4px 0 10px;">${h.prompt}</div>
+        <div style="font-size:13px; margin-bottom:4px;"><b>Вы:</b> ${h.my}</div>
+        <div style="font-size:13px; color:var(--teal);"><b>${state.partnerName}:</b> ${h.partner}</div>
+      </div>
+    `).join('');
+  }
+
+  function submitDailyAnswer(ans) {
+    state.todayChallenge.myAnswer = ans;
+    state.streakDays += 1;
+    saveState();
+  }
+
+  // ==========================================================================
+  // ВКЛАДКА 3: ОБЩИЙ СПИСОК ЖЕЛАНИЙ (ПАКЕТНЫЙ ПЕРЕНОС) + ИСТОРИЯ ЛЮБВИ
+  // ==========================================================================
+  let wishMultiSelect = false;
+  let selectedWishIds = new Set();
+
+  function setWishSubTab(idx) {
+    document.getElementById('btnWishSub0').classList.toggle('active', idx === 0);
+    document.getElementById('btnWishSub1').classList.toggle('active', idx === 1);
+    document.getElementById('wishlistSubBox').style.display = idx === 0 ? 'block' : 'none';
+    document.getElementById('loveStorySubBox').style.display = idx === 1 ? 'block' : 'none';
+  }
+
+  function toggleWishMultiSelect() {
+    wishMultiSelect = !wishMultiSelect;
+    selectedWishIds.clear();
+    renderWishlistAndStoryTab();
+  }
+
+  function renderWishlistAndStoryTab() {
+    document.getElementById('boardsBar').innerHTML = state.boards.map(b => `
+      <button class="chip ${b.id === state.activeBoardId ? 'active' : ''}" onclick="state.activeBoardId='${b.id}'; saveState();">
+        ${b.emoji} ${b.title}
+      </button>
+    `).join('');
+
+    document.getElementById('multiSelectBtn').textContent = wishMultiSelect ? 'Готово' : '☑️ Перенести несколько';
+    const showBatch = wishMultiSelect && selectedWishIds.size > 0;
+    document.getElementById('batchMoveBar').style.display = showBatch ? 'block' : 'none';
+
+    if (showBatch) {
+      document.getElementById('batchTargetBoards').innerHTML = state.boards
+        .filter(b => b.id !== state.activeBoardId)
+        .map(b => `<button class="chip active" onclick="batchMoveTo('${b.id}')">➜ ${b.emoji} ${b.title}</button>`)
+        .join('');
+    }
+
+    const items = state.wishes.filter(w => w.boardId === state.activeBoardId);
+    document.getElementById('wishlistCardsContainer').innerHTML = items.map(w => {
+      const sel = selectedWishIds.has(w.id);
+      return `
+        <div class="card" style="display:flex; align-items:center; gap:12px; border-color:${sel ? 'var(--pink)' : 'rgba(255,255,255,0.08)'};" onclick="onWishCardClick('${w.id}')">
+          <span style="font-size:20px;">${wishMultiSelect ? (sel ? '✅' : '⬜') : (w.done ? '✨' : '⭕')}</span>
+          <div style="flex:1;">
+            <div style="font-weight:700; text-decoration:${w.done ? 'line-through' : 'none'};">${w.title}</div>
+            ${w.sub ? `<div style="font-size:12px; color:var(--muted);">${w.sub}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('loveStoryTimelineList').innerHTML = state.loveStory.map(ev => `
+      <div class="card">
+        <div style="font-size:12px; color:var(--pink); font-weight:700;">${ev.date} • 📍 ${ev.loc}</div>
+        <div style="font-size:16px; font-weight:800; margin:6px 0;">${ev.title}</div>
+        <div style="font-size:14px; color:rgba(255,255,255,0.8);">${ev.text}</div>
+      </div>
+    `).join('');
+  }
+
+  function onWishCardClick(id) {
+    if (wishMultiSelect) {
+      if (selectedWishIds.has(id)) selectedWishIds.delete(id);
+      else selectedWishIds.add(id);
+      renderWishlistAndStoryTab();
+      return;
+    }
+    const item = state.wishes.find(w => w.id === id);
+    if (!item) return;
+    item.done = !item.done;
+    if (item.done) {
+      state.loveStory.unshift({
+        date: 'Сегодня',
+        loc: 'Мечта сбылась ✨',
+        title: item.title,
+        text: item.sub || 'Ещё одно выполненное желание в нашей общей истории!'
+      });
+    }
+    saveState();
+  }
+
+  function batchMoveTo(targetBoardId) {
+    state.wishes.forEach(w => {
+      if (selectedWishIds.has(w.id)) w.boardId = targetBoardId;
+    });
+    state.activeBoardId = targetBoardId;
+    wishMultiSelect = false;
+    selectedWishIds.clear();
+    saveState();
+  }
+
+  function addWishPrompt() {
+    const title = prompt('Ваше новое желание или идея:');
+    if (!title) return;
+    const sub = prompt('Детали или ссылка (необязательно):') || '';
+    state.wishes.unshift({ id: 'w' + Date.now(), boardId: state.activeBoardId, title, sub, done: false });
+    saveState();
+  }
+
+  // ==========================================================================
+  // ВКЛАДКА 4: ШПАРГАЛКА МЕЛОЧЕЙ И ЗАМЕТКИ С ПЕРЕКЛЮЧАТЕЛЕМ ПРИВАТНОСТИ
+  // ==========================================================================
+  function renderNotesTab() {
+    const chips = state.notes.filter(n => n.chip);
+    const notes = state.notes.filter(n => !n.chip);
+
+    document.getElementById('factChipsGrid').innerHTML = chips.map(c => `
+      <div class="card" style="margin-bottom:0; padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:20px;">${c.emoji}</span>
+          <span onclick="toggleNotePrivacy('${c.id}')" style="cursor:pointer; font-size:10px; font-weight:700; padding:3px 7px; border-radius:8px; background:${c.shared ? 'rgba(0,210,211,0.18)' : 'rgba(255,77,136,0.2)'}; color:${c.shared ? 'var(--teal)' : 'var(--pink)'};">
+            ${c.shared ? '👥 Общая' : '🔒 Скрыто'}
+          </span>
+        </div>
+        <div style="font-size:11px; color:var(--muted);">${c.title}</div>
+        <div style="font-size:13px; font-weight:700; margin-top:2px;" onclick="editNoteContent('${c.id}')">${c.content} ✏️</div>
+      </div>
+    `).join('');
+
+    document.getElementById('regularNotesList').innerHTML = notes.map(n => `
+      <div class="card" style="border-color:${n.shared ? 'rgba(0,210,211,0.35)' : 'rgba(255,77,136,0.35)'};">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div style="font-weight:800; font-size:15px;">${n.emoji} ${n.title}</div>
+          <button class="btn-outline" style="padding:4px 10px; font-size:11px; color:${n.shared ? 'var(--teal)' : 'var(--pink)'};" onclick="toggleNotePrivacy('${n.id}')">
+            ${n.shared ? '👥 Видит партнёр' : '🔒 Только для меня'}
+          </button>
+        </div>
+        <div style="font-size:14px; color:rgba(255,255,255,0.8);">${n.content}</div>
+      </div>
+    `).join('');
+  }
+
+  function toggleNotePrivacy(id) {
+    const n = state.notes.find(x => x.id === id);
+    if (n) { n.shared = !n.shared; saveState(); }
+  }
+
+  function editNoteContent(id) {
+    const n = state.notes.find(x => x.id === id);
+    if (!n) return;
+    const val = prompt(n.title + ':', n.content);
+    if (val !== null) { n.content = val; saveState(); }
+  }
+
+  function addNotePrompt() {
+    const title = prompt('Заголовок заметки (например: Идея подарка):');
+    if (!title) return;
+    const content = prompt('Текст заметки:') || '';
+    const shared = confirm('Поделиться этой заметкой с партнёром?\n(Нажмите «Отмена», чтобы оставить приватной только для вас)');
+    state.notes.push({ id: 'n' + Date.now(), chip: false, mine: true, emoji: '💌', title, content, shared });
+    saveState();
+  }
+
+  // Запуск приложения
+  initDoodleStudio();
+  renderAll();
+</script>
+</body>
+</html>
